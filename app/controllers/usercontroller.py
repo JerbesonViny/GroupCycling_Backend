@@ -1,5 +1,5 @@
 import uuid, asyncio
-
+from sqlalchemy.exc import IntegrityError
 from app.database.configuration import Session
 from app.utils.secury import encrypt_data
 from app.database.schemas import User
@@ -18,6 +18,6 @@ async def create_user(user: User) -> str:
         except: # Caso haja uma exceção
             await s.rollback() # Desfazer as alterações
 
-            return None # Retornar None
+            raise IntegrityError("Exists", "Email", "User") # Retornar None
 
         return user.uuid # Retornando o UUID do usuário cadastrado
