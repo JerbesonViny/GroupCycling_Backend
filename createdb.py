@@ -11,3 +11,5 @@ async def create_tables():
         await conn.run_sync(Base.metadata.drop_all)
         # Esperando todas as tabelas do banco serem criadas
         await conn.run_sync(Base.metadata.create_all)
+
+asyncio.run( create_tables() )

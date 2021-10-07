@@ -6,4 +6,4 @@ import os
 engine = create_async_engine(os.environ.get('SQLALCHEMY_DATABASE_URL'), echo=True)
 
 # Criando a sessão async
-session = sessionmaker(future=True, class_=AsyncSession, bind=engine)
+Session = sessionmaker(future=True, class_=AsyncSession, bind=engine)
