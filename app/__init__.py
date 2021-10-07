@@ -1,6 +1,7 @@
 from authlib.integrations.flask_client import OAuth
 from dotenv import load_dotenv
 from flask import Flask
+from flask_cors import CORS
 import os
 
 load_dotenv()
@@ -8,11 +9,13 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY")
 
+CORS(app, resources={r'/*': {'origin': '*'}})
+
 oauth = OAuth(app) # Iniciando o OAuth2 a partir do app anteriormente criado
 google = oauth.register(
   name="google",
-  client_id='1091356976572-h11ha06kpp4l50vghkpc70di7jnk5a3q.apps.googleusercontent.com',
-  client_secret='kSiQj_RclyCg_XUVWcRN_jjr',
+  client_id='606410079738-7oh00tptc9mcjr9dpenevug4uqb3ah3f.apps.googleusercontent.com',
+  client_secret='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',
   access_token_url="https://accounts.google.com/o/oauth2/token",
   acess_token_params=None,
   authorize_url="https://accounts.google.com/o/oauth2/auth",

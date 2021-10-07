@@ -17,8 +17,8 @@ loop = asyncio.get_event_loop()
 def home():
     return jsonify(message='Hello')
 
-@app.route('/authentication/', methods=['POST',])
-def authorization():
+@app.route('/login/', methods=['POST',])
+def login():
     data = request.json
 
     # Verificando se todos os campos foram preenchidos
@@ -35,8 +35,8 @@ def authorization():
 
     return jsonify(message="Preencha todos os campos!"), 400 # Bad Request
     
-@app.route('/login/')
-def login():
+@app.route('/google-auth/')
+def google_auth():
     google = oauth.create_client('google') # Abrindo uma tela do google, onde o usuário poderá se autenticar a partir dele
     redirect_uri = url_for('authorize', _external=True) # Criando uma URL para redirecionar o usuário
     return google.authorize_redirect(redirect_uri) # Após ser autenticado, redirecionar o usuário para a URL anteriormente definida
