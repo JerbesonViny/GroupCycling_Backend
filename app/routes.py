@@ -1,8 +1,8 @@
-from flask import request, jsonify
+from flask import request, jsonify, redirect, url_for
 from sqlalchemy.exc import IntegrityError
 import asyncio
 
-from app import app
+from app import app, oauth, google
 from app.database.schemas import User
 from app.controllers.usercontroller import create_user
 
@@ -10,7 +10,25 @@ loop = asyncio.get_event_loop()
 
 @app.route('/')
 def home():
-    return 'Hello'
+    return jsonify(message='Hello')
+
+@app.route('/login/')
+def login():
+  google = oauth.create_client('google') # Abrindo uma tela do google, onde o usuário poderá se autenticar a partir dele
+  redirect_uri = url_for('authorize', _external=True) # Criando uma URL para redirecionar o usuário
+  return google.authorize_redirect(redirect_uri) # Após ser autenticado, redirecionar o usuário para a URL anteriormente definida
+
+@app.route('/authorize')
+def authorize():
+  google = oauth.create_client("google") # Abrindo uma tela do google, onde o usuário poderá se autenticar a partir dele
+  token = google.authorize_access_token() # Captando o token após o usuário ser autenticado
+  resp = google.get('userinfo') # Captando as informações do usuário. Ex: DisplayName: 'Sanzia'
+  user_info = resp.json() # Transformando as informações em um JSON e armazenando-as na variável "user_info"
+
+  print(user_info) # Mostrando no terminal as informações guardadas na sessão
+
+  return jsonify(user_info={"email": user_info['email']})
+
 
 @app.route('/register/', methods=['POST',])
 def create_account():
