@@ -23,12 +23,13 @@ def login():
 def authorize():
   google = oauth.create_client("google") # Abrindo uma tela do google, onde o usuário poderá se autenticar a partir dele
   token = google.authorize_access_token() # Captando o token após o usuário ser autenticado
-  resp = google.get('userinfo') # Captando as informações do usuário. Ex: DisplayName: 'Sanzia'
+  resp = google.get('userinfo') # Captando as informações do usuário. Ex: DisplayName: 'Maria'
   user_info = resp.json() # Transformando as informações em um JSON e armazenando-as na variável "user_info"
 
   user_credentials = {"email": user_info["email"]}
   token = create_token(user_credentials)
 
+  # TODO: Verificar se o usuário está cadastrado no sistema
   print(user_info) # Mostrando no terminal as informações guardadas na sessão
 
   return jsonify(token=token)
