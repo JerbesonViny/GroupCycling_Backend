@@ -3,6 +3,7 @@ from sqlalchemy.exc import IntegrityError
 import asyncio
 
 from app import app, oauth, google
+from app.utils.secury import create_token
 from app.database.schemas import User
 from app.controllers.usercontroller import create_user
 
@@ -25,9 +26,12 @@ def authorize():
   resp = google.get('userinfo') # Captando as informações do usuário. Ex: DisplayName: 'Sanzia'
   user_info = resp.json() # Transformando as informações em um JSON e armazenando-as na variável "user_info"
 
+  user_credentials = {"email": user_info["email"]}
+  token = create_token(user_credentials)
+
   print(user_info) # Mostrando no terminal as informações guardadas na sessão
 
-  return jsonify(user_info={"email": user_info['email']})
+  return jsonify(token=token)
 
 
 @app.route('/register/', methods=['POST',])
