@@ -1,11 +1,12 @@
 import uuid, asyncio
 
 from app.database.configuration import Session
+from app.utils.secury import encrypt_data
 from app.database.schemas import User
 
 # Função que permite criar usuários
 async def create_user(user: User) -> str:
-    # Adicionar criptografia
+    user.password = encrypt_data(user.password)
     user.uuid = uuid.uuid4()
 
     # Abrindo uma sessão no banco
