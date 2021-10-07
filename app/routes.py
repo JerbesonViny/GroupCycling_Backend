@@ -4,9 +4,11 @@ import asyncio
 
 from app import app, oauth, google
 from app.utils.secury import create_token
-from app.database.schemas import User
+from app.database.schemas import ( 
+    User, user_schema, users_schema
+)
 from app.controllers.usercontroller import ( 
-    create_user, verify_user_exists
+    create_user, verify_user_exists, authentication
 )
 
 loop = asyncio.get_event_loop()
@@ -15,6 +17,24 @@ loop = asyncio.get_event_loop()
 def home():
     return jsonify(message='Hello')
 
+@app.route('/authentication/', methods=['POST',])
+def authorization():
+    data = request.json
+
+    # Verificando se todos os campos foram preenchidos
+    if( data.get('email') and data.get('password') ):
+        auth = loop.run_until_complete(authentication(data['email'], data['password']))
+
+        if( auth is not None and len(auth) > 0 ):
+            auth = user_schema.dump(auth)
+            token = create_token(auth)
+
+            return jsonify(token=token), 200 # OK
+        
+        return jsonify(message="E-mail e/ou senha incorretos!"), 400 # Bad Request
+
+    return jsonify(message="Preencha todos os campos!"), 400 # Bad Request
+    
 @app.route('/login/')
 def login():
     google = oauth.create_client('google') # Abrindo uma tela do google, onde o usuário poderá se autenticar a partir dele

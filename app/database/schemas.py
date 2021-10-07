@@ -19,3 +19,10 @@ class User(Base):
 
     def __repr__(self) -> str:
         return f"<User(Email={self.email})>"
+
+class UserSchema(ma.Schema):
+    class Meta:
+        fields = ('uuid', 'name', 'email', 'password')
+
+user_schema = UserSchema()
+users_schema = UserSchema(many=True)

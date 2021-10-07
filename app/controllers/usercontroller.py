@@ -36,3 +36,15 @@ async def verify_user_exists(email: str) -> bool:
             return True
 
         return False # Caso contrário, não existe esse usuário
+
+# Função que permite autenticar o usuário
+async def authentication(email: str, password: str) -> dict:
+    password = encrypt_data(password)
+
+    # Abrindo uma sessão no banco
+    async with Session() as s:
+        query = await s.execute(
+            select(User.name, User.email).where(User.email == email, User.password == password)
+        )
+
+        return query.first()
