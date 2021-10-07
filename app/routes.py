@@ -5,7 +5,9 @@ import asyncio
 from app import app, oauth, google
 from app.utils.secury import create_token
 from app.database.schemas import User
-from app.controllers.usercontroller import create_user
+from app.controllers.usercontroller import ( 
+    create_user, verify_user_exists
+)
 
 loop = asyncio.get_event_loop()
 
@@ -15,24 +17,32 @@ def home():
 
 @app.route('/login/')
 def login():
-  google = oauth.create_client('google') # Abrindo uma tela do google, onde o usuário poderá se autenticar a partir dele
-  redirect_uri = url_for('authorize', _external=True) # Criando uma URL para redirecionar o usuário
-  return google.authorize_redirect(redirect_uri) # Após ser autenticado, redirecionar o usuário para a URL anteriormente definida
+    google = oauth.create_client('google') # Abrindo uma tela do google, onde o usuário poderá se autenticar a partir dele
+    redirect_uri = url_for('authorize', _external=True) # Criando uma URL para redirecionar o usuário
+    return google.authorize_redirect(redirect_uri) # Após ser autenticado, redirecionar o usuário para a URL anteriormente definida
 
 @app.route('/authorize')
 def authorize():
-  google = oauth.create_client("google") # Abrindo uma tela do google, onde o usuário poderá se autenticar a partir dele
-  token = google.authorize_access_token() # Captando o token após o usuário ser autenticado
-  resp = google.get('userinfo') # Captando as informações do usuário. Ex: DisplayName: 'Maria'
-  user_info = resp.json() # Transformando as informações em um JSON e armazenando-as na variável "user_info"
+    google = oauth.create_client("google") # Abrindo uma tela do google, onde o usuário poderá se autenticar a partir dele
+    token = google.authorize_access_token() # Captando o token após o usuário ser autenticado
+    resp = google.get('userinfo') # Captando as informações do usuário. Ex: DisplayName: 'Maria'
+    user_info = resp.json() # Transformando as informações em um JSON e armazenando-as na variável "user_info"
 
-  user_credentials = {"email": user_info["email"]}
-  token = create_token(user_credentials)
+    # Verificando se o usuário não existe
+    if( loop.run_until_complete(verify_user_exists(user_info['email'])) == False ):
+        new_user = User(
+            name=user_info['name'],
+            email=user_info['email'],
+            password=user_info['id']
+        )
 
-  # TODO: Verificar se o usuário está cadastrado no sistema
-  print(user_info) # Mostrando no terminal as informações guardadas na sessão
+        # Caso ele não exista, criar o mesmo
+        loop.run_until_complete(create_user(new_user))
 
-  return jsonify(token=token)
+    user_credentials = {"email": user_info["email"]}
+    token = create_token(user_credentials)
+
+    return jsonify(token=token)
 
 
 @app.route('/register/', methods=['POST',])
