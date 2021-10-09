@@ -1,7 +1,7 @@
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.types import Integer, String, Text
+from sqlalchemy.types import Integer, String, Text, Float
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.schema import Column
+from sqlalchemy.schema import Column, ForeignKey
 import marshmallow as ma
 
 from app.database.configuration import engine
@@ -20,9 +20,34 @@ class User(Base):
     def __repr__(self) -> str:
         return f"<User(Email={self.email})>"
 
+# Modelo de evento
+class Event(Base):
+    __tablename__ = "events"
+
+    id = Column(String, primary_key=True)
+    title = Column(String(30), nullable=True)
+    description = Column(Text, nullable=True)
+    origin_latitude = Column(Float, nullable=False)
+    origin_longitude = Column(Float, nullable=False)
+    destination_latitude = Column(Float, nullable=False)
+    destination_longitude = Column(Float, nullable=False)
+    author_uuid = Column(UUID(as_uuid=True), ForeignKey("users.uuid"))
+
+    def __repr__(self) -> str:
+        return f"<Event(Title={self.title}, origin=[{self.origin_latitude}, {self.origin_longitude}], destination=[{self.destination_latitude}, {self.destination_longitude}])>"
+
 class UserSchema(ma.Schema):
     class Meta:
         fields = ('uuid', 'name', 'email', 'password')
 
+class EventSchema(ma.Schema):
+    class Meta:
+        fields = ('id', 'title', 'description', 'origin_latitude', 'origin_longitude', 'destination_latitude', 'destination_longitude', 'author_uuid')
+
+# Serializer User
 user_schema = UserSchema()
 users_schema = UserSchema(many=True)
+
+# Serializer Event
+event_schema = EventSchema()
+events_schema = EventSchema(many=True)
