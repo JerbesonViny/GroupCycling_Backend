@@ -24,7 +24,7 @@ class User(Base):
 class Event(Base):
     __tablename__ = "events"
 
-    id = Column(String, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     title = Column(String(30), nullable=True)
     description = Column(Text, nullable=True)
     origin_latitude = Column(Float, nullable=False)
