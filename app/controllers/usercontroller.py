@@ -8,7 +8,7 @@ from app.database.schemas import User
 # Função que permite criar usuários
 async def create_user(user: User) -> str:
     user.password = encrypt_data(user.password)
-    user.uuid = uuid.uuid4()
+    user.uuid = str(uuid.uuid4())
 
     # Abrindo uma sessão no banco
     async with Session() as s:
@@ -44,7 +44,7 @@ async def authentication(email: str, password: str) -> dict:
     # Abrindo uma sessão no banco
     async with Session() as s:
         query = await s.execute(
-            select(User.name, User.email).where(User.email == email, User.password == password)
+            select(User.uuid , User.name, User.email).where(User.email == email, User.password == password)
         )
 
         return query.first()
