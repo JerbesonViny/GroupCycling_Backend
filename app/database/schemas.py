@@ -10,39 +10,39 @@ Base = declarative_base()
 
 # Classe/modelo de usuário
 class User(Base):
-    __tablename__ = "users"
+  __tablename__ = "users"
 
-    uuid = Column(UUID, primary_key=True)
-    name = Column(String, nullable=False)
-    email = Column(String, nullable=False, unique=True)
-    password = Column(Text, nullable=False)
+  uuid = Column(UUID, primary_key=True)
+  name = Column(String, nullable=False)
+  email = Column(String, nullable=False, unique=True)
+  password = Column(Text, nullable=False)
 
-    def __repr__(self) -> str:
-        return f"<User(Email={self.email})>"
+  def __repr__(self) -> str:
+    return f"<User(Email={self.email})>"
 
 # Modelo de evento
 class Event(Base):
-    __tablename__ = "events"
+  __tablename__ = "events"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    title = Column(String(30), nullable=True)
-    description = Column(Text, nullable=True)
-    origin_latitude = Column(Float, nullable=False)
-    origin_longitude = Column(Float, nullable=False)
-    destination_latitude = Column(Float, nullable=False)
-    destination_longitude = Column(Float, nullable=False)
-    author_uuid = Column(UUID(as_uuid=True), ForeignKey("users.uuid"))
+  id = Column(Integer, primary_key=True, autoincrement=True)
+  title = Column(String(30), nullable=True)
+  description = Column(Text, nullable=True)
+  origin_latitude = Column(Float, nullable=False)
+  origin_longitude = Column(Float, nullable=False)
+  destination_latitude = Column(Float, nullable=False)
+  destination_longitude = Column(Float, nullable=False)
+  author_uuid = Column(UUID(as_uuid=True), ForeignKey("users.uuid"))
 
-    def __repr__(self) -> str:
-        return f"<Event(Title={self.title}, origin=[{self.origin_latitude}, {self.origin_longitude}], destination=[{self.destination_latitude}, {self.destination_longitude}])>"
+  def __repr__(self) -> str:
+    return f"<Event(Title={self.title}, origin=[{self.origin_latitude}, {self.origin_longitude}], destination=[{self.destination_latitude}, {self.destination_longitude}])>"
 
 class UserSchema(ma.Schema):
-    class Meta:
-        fields = ('uuid', 'name', 'email', 'password')
+  class Meta:
+    fields = ('uuid', 'name', 'email', 'password')
 
 class EventSchema(ma.Schema):
-    class Meta:
-        fields = ('id', 'title', 'description', 'origin_latitude', 'origin_longitude', 'destination_latitude', 'destination_longitude', 'author_uuid')
+  class Meta:
+    fields = ('id', 'title', 'description', 'origin_latitude', 'origin_longitude', 'destination_latitude', 'destination_longitude', 'author_uuid')
 
 # Serializer User
 user_schema = UserSchema()

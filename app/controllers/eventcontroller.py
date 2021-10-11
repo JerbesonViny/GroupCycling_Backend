@@ -4,10 +4,10 @@ from sqlalchemy.future import select
 
 # Função que permite a criação de novos eventos
 async def create_event(event: Event) -> int:
-    # Abrindo uma sessão no banco
-    async with Session() as s:
-        s.add( event )
-        await s.commit()
-        await s.refresh( event )
+  # Abrindo uma sessão no banco
+  async with Session() as s:
+    s.add( event )
+    await s.commit()
+    await s.refresh( event )
 
-        return event.id
+    return event.id

@@ -1,0 +1,182 @@
+openapi: 3.0.0
+info:
+  title: Group Cycling
+  version: 1.0.0
+  description: >-
+    Group Cycling é um app que tem como objetivo, reunir grupos de ciclistas,
+    fazer com que os mesmos criem novos laços, conheçam novas pessoas e etc.
+  contact:
+    name: Jerbeson Vinycius
+    email: jerbesonvinycius@gmail.com
+servers:
+  - url: http://localhost:5000
+    description: Development server
+  - url: https://group-cycling-backend.herokuapp.com
+    description: Production server
+tags:
+  - name: Users
+    description: Rotas dos usuários
+  - name: Events
+    description: Rotas de eventos
+paths:
+  /register:
+    post:
+      tags:
+        - Users
+      summary: Rota de criação de novos usuários
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_uuid:
+                    type: string
+                    example: 5bc10a76-ae6d-4a3a-8552-cdfaed480374
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: >-
+                      Esse e-mail já está em uso, tente novamente utilizando
+                      outro!
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Preencha todos os campos!
+  /login:
+    post:
+      tags:
+        - Users
+      summary: Rota que permite efetuar login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                email:
+                  type: string
+                  example: Gowther@gmail.com
+                password:
+                  type: string
+                  example: LineUp629
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: >-
+                      eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Ikdvd3RoZXJAZ21haWwuY29tIiwibmFtZSI6Ikdvd3RoZXIiLCJleHAiOjE2MzM3OTIwNDd9.s-hb8CrTvY2ZeB8vaYj4P8hbD9U3x8BSEiFxCKZQEKo
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: E-mail e/ou senha incorretos!
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Preencha todos os campos!
+  /events/create:
+    post:
+      tags:
+        - Events
+      summary: Rota que possibilita criar novos eventos
+      parameters:
+        - in: header
+          name: X-access-token
+          description: >-
+            Para ter acesso ao token que vai ser enviado pelos headers, é só
+            efetuar o login.
+          schema:
+            type: string
+            example: >-
+              eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImplcmJlc29uQGdtYWlsLmNvbSIsInV1aWQiOiI5MGRjYWE1OC01OWI5LTRkZjAtOTRiYS01YmRmNWMyYTg3MTciLCJuYW1lIjoiamVyYmVzb24iLCJleHAiOjE2MzM5MDcyMTJ9.yx457DCwYQFW0tSr16wAXynzYVn_yvqIgx3DEGaSUGU
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: Montain Bike
+                description:
+                  type: string
+                  example: De 4:20 à 8:00
+                origin:
+                  type: object
+                  example:
+                    latitude: 0.2
+                    longitude: 0.3
+                destination:
+                  type: object
+                  example:
+                    latitude: 32
+                    longitude: 0.8
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              example:
+                event_id: 1
+        '401':
+          description: "Unauthorized"
+          content:
+            application/json:
+              examples:
+                token:
+                  value: {"message":"É necessário estar logado para ter acesso a essa funcionalidade!"}
+                expired-or-invalid:
+                  value: {"message": "O token inválido e/ou expirou!"}
+components:
+  schemas:
+    User:
+      properties:
+        name:
+          type: string
+          example: Gowther
+        email:
+          type: string
+          example: Gowther@gmail.com
+        password:
+          type: string
+          example: LineUp629
+        password_again:
+          type: string
+          example: LineUp629

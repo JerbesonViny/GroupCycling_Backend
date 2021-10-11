@@ -2,12 +2,23 @@ from authlib.integrations.flask_client import OAuth
 from dotenv import load_dotenv
 from flask import Flask
 from flask_cors import CORS
+from flask_swagger_ui import get_swaggerui_blueprint
 import os
 
 load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY")
+
+blueprint_swaggerui = get_swaggerui_blueprint(
+  base_url='/docs',
+  api_url='/static/openapi.yaml',
+  config={
+    "app_name": "Group Cycling"
+  }
+)
+
+app.register_blueprint(blueprint_swaggerui)
 
 CORS(app, resources={r'/*': {'origin': '*'}})
 
