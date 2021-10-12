@@ -12,7 +12,7 @@ from app.controllers.usercontroller import (
   create_user, verify_user_exists, authentication
 )
 from app.controllers.eventcontroller import (
-  create_event
+  create_event, get_all_events
 )
 
 loop = asyncio.get_event_loop()
@@ -101,7 +101,7 @@ def add_event():
     payload = decode_token(authorization.get('X-access-token'))
 
     if( payload == None ):
-      return jsonify(message="O token inválido e/ou expirou!"), 401 # Unauthorized
+      return jsonify(message="Token inválido e/ou expirou!"), 401 # Unauthorized
 
   # Verificando se todos os campos foram preenchidos
   if( data.get('title') and data.get('description') and data.get('origin') and data.get('destination') ):
@@ -124,3 +124,20 @@ def add_event():
         return jsonify(message="Ocorreu um erro ao tentar cadastrar o evento!"), 400 # Bad Request
 
   return jsonify(message="Preencha todos os campos!"), 422 # Unprocessable Entity
+
+@app.route('/events', methods=['GET',])
+def list_events():
+  authorization = request.headers
+
+  # Se o token tiver sido passado pelos headers
+  if( authorization.get('X-access-token') ):
+    # Se o token enviado é válido e pode ser decodificado
+    if( decode_token(authorization.get('X-access-token')) ):
+      eventos = loop.run_until_complete(get_all_events()) # Captando todos os eventos
+      eventos = events_schema.dump(eventos)
+
+      return jsonify(eventos), 200 # OK
+
+    return jsonify(message="Token inválido e/ou expirou!"), 401 # Unauthorized
+
+  return jsonify(message="É necessário estar logado para ter acesso a essa funcionalidade!"), 401 # Unauthorized
