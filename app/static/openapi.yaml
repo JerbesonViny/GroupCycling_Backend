@@ -214,3 +214,30 @@ components:
         password_again:
           type: string
           example: LineUp629
+    Event:
+      type: object
+      properties:
+        title:
+          type: string
+          example: Montain Bike
+        description:
+          type: string
+          example: De 4:20 à 8:00
+        origin:
+          type: object
+          properties:
+            latitude:
+              type: number
+              example: 0.2
+            longitude: 
+              type: number
+              example: 0.3
+        destination:
+          type: object
+          properties:
+            latitude:
+              type: number
+              example: 27
+            longitude: 
+              type: number
+              example: 0.8
