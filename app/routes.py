@@ -1,8 +1,9 @@
-from flask import request, jsonify, redirect, url_for
+from flask import request, Request, jsonify, redirect, url_for
 from sqlalchemy.exc import IntegrityError
 import asyncio
 
 from app import app, oauth, google
+from app.utils import search_arg
 from app.utils.secury import create_token, decode_token
 from app.database.schemas import (
   User, user_schema, users_schema, \
@@ -12,7 +13,7 @@ from app.controllers.usercontroller import (
   create_user, verify_user_exists, authentication
 )
 from app.controllers.eventcontroller import (
-  create_event, get_all_events
+  create_event, get_all_events, get_events_per_user
 )
 
 loop = asyncio.get_event_loop()
@@ -24,19 +25,19 @@ def home():
 @app.route('/login', methods=['POST',])
 def login():
   data = request.json
-  
+
   # Verificando se todos os campos foram preenchidos
   if( data.get('email') and data.get('password') ):
     auth = loop.run_until_complete(authentication(data['email'], data['password']))
-      
+
     if( auth is not None and len(auth) > 0 ):
       auth = user_schema.dump(auth)
       token = create_token(auth)
-      
+
       return jsonify(token=token), 200 # OK
-    
+
     return jsonify(message="E-mail e/ou senha incorretos!"), 400 # Bad Request
-  
+
   return jsonify(message="Preencha todos os campos!"), 422 # Unprocessable Entity
 
 @app.route('/google-auth')
@@ -59,7 +60,7 @@ def authorize():
       email=user_info['email'],
       password=user_info['id']
     )
-    
+
     # Caso ele não exista, criar o mesmo
     loop.run_until_complete(create_user(new_user))
 
@@ -138,6 +139,33 @@ def list_events():
 
       return jsonify(eventos), 200 # OK
 
+    return jsonify(message="Token inválido e/ou expirou!"), 401 # Unauthorized
+
+  return jsonify(message="É necessário estar logado para ter acesso a essa funcionalidade!"), 401 # Unauthorized
+
+@app.route('/search-events', methods=['GET', 'HEAD',])
+def list_events_per_author():
+  params = request.query_string # Obtendo os parâmetros passados via URL
+  list_args = params.decode('UTF-8').split("=") # Dispondo os itens obtidos em um array
+  uuid_pos = search_arg(list_args ,'author_uuid') # Procurando o argumento "author_uuid" nos parâmetros
+  authorization = request.headers
+
+  # Se o token tiver sido passado pelos headers
+  if( authorization.get('X-access-token') ):
+    # Se o token enviado é válido e pode ser decodificado
+    if( decode_token(authorization.get('X-access-token')) ):
+      # Verificando se foi possível encontrar o argumento "author_uuid" nos parâmetros passados
+      if( uuid_pos is not None ):
+        # O valor do argumento "author_uuid" está uma posição a frente do argumento
+        uuid_values_pos = uuid_pos + 1
+        events = loop.run_until_complete( get_events_per_user(list_args[uuid_values_pos]) )
+      else:
+        events = None
+
+      events = events_schema.dump(events) # Serializando os dados obtidos    
+
+      return jsonify(events), 200 # OK
+    
     return jsonify(message="Token inválido e/ou expirou!"), 401 # Unauthorized
 
   return jsonify(message="É necessário estar logado para ter acesso a essa funcionalidade!"), 401 # Unauthorized

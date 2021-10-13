@@ -125,6 +125,7 @@ paths:
             type: string
             example: >-
               eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImplcmJlc29uQGdtYWlsLmNvbSIsInV1aWQiOiI5MGRjYWE1OC01OWI5LTRkZjAtOTRiYS01YmRmNWMyYTg3MTciLCJuYW1lIjoiamVyYmVzb24iLCJleHAiOjE2MzM5MDcyMTJ9.yx457DCwYQFW0tSr16wAXynzYVn_yvqIgx3DEGaSUGU
+        required: true
       responses:
         200:
           description: "OK"
@@ -143,7 +144,44 @@ paths:
                 expired-or-invalid:
                   value: {"message": "Token inválido e/ou expirou!"}
                 
-                  
+  /search-events:
+    get:
+      tags:
+        - "Events"
+      parameters:
+        - in: query
+          name: author_uuid
+          description: >-
+            UUID correspondente ao usuário que deseja captar os eventos cadastrados pelo mesmo.
+          schema:
+            type: string
+          required: true
+        - in: header
+          name: X-access-token
+          description: >-
+            Para ter acesso ao token que vai ser enviado pelos headers, é só efetuar o login.
+          schema:
+              type: string
+              example: >-
+                eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImplcmJlc29uQGdtYWlsLmNvbSIsInV1aWQiOiI5MGRjYWE1OC01OWI5LTRkZjAtOTRiYS01YmRmNWMyYTg3MTciLCJuYW1lIjoiamVyYmVzb24iLCJleHAiOjE2MzM5MDcyMTJ9.yx457DCwYQFW0tSr16wAXynzYVn_yvqIgx3DEGaSUGU
+          required: true
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                example: [{"id": 1,"title": "Extreme Bike","description": "Extremo","destination_latitude": 0.3,"destination_longitude": 27.0,"origin_latitude": 0.2,"origin_longitude": 0.2, "author_uuid": "f6eda7b3-1511-43e1-a596-a016a84b8c10"}, {"id": 2,"title": "Montain Bike","description": "Extremo","destination_latitude": 0.3,"destination_longitude": 27.0,"origin_latitude": 0.2,"origin_longitude": 0.2, "author_uuid": "f6eda7b3-1511-43e1-a596-a016a84b8c10"}]
+        401:
+          description: "Unauthorized"
+          content:
+            application/json:
+              examples:
+                token:
+                  value: {"message":"É necessário estar logado para ter acesso a essa funcionalidade!"}
+                expired-or-invalid:
+                  value: {"message": "Token inválido e/ou expirou!"}
 
   /events/create:
     post:
