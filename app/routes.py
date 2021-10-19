@@ -105,11 +105,14 @@ def add_event():
       return jsonify(message="Token inválido e/ou expirou!"), 401 # Unauthorized
 
   # Verificando se todos os campos foram preenchidos
-  if( data.get('title') and data.get('description') and data.get('origin') and data.get('destination') ):
+  if( data.get('title') and data.get('type_bike') and data.get('meeting') and data.get('intensity') and data.get('type_route') and data.get('origin') and data.get('destination') ):
     if( data.get('origin').get('latitude') and data.get('origin').get('longitude') and data.get('destination').get('latitude') and data.get('destination').get('longitude') ):
       event = Event(
         title=data.get('title'),
-        description=data.get('description'),
+        type_bike=data.get('type_bike'),
+        meeting=data.get('meeting'),
+        intensity=data.get('intensity'),
+        type_route=data.get('type_route'),
         origin_latitude=data.get('origin').get('latitude'),
         origin_longitude=data.get('origin').get('longitude'),
         destination_latitude=data.get('destination').get('latitude'),
