@@ -25,8 +25,11 @@ class Event(Base):
   __tablename__ = "events"
 
   id = Column(Integer, primary_key=True, autoincrement=True)
-  title = Column(String(30), nullable=True)
-  description = Column(Text, nullable=True)
+  title = Column(String(30), nullable=False)
+  type_bike = Column(String, nullable=False)
+  meeting = Column(String, nullable=False)
+  intensity = Column(String, nullable=False)
+  type_route = Column(String, nullable=False)
   origin_latitude = Column(Float, nullable=False)
   origin_longitude = Column(Float, nullable=False)
   destination_latitude = Column(Float, nullable=False)
@@ -42,7 +45,7 @@ class UserSchema(ma.Schema):
 
 class EventSchema(ma.Schema):
   class Meta:
-    fields = ('id', 'title', 'description', 'origin_latitude', 'origin_longitude', 'destination_latitude', 'destination_longitude', 'author_uuid')
+    fields = ('id', 'title', 'type_bike', 'meeting', 'intensity', 'type_route', 'origin_latitude', 'origin_longitude', 'destination_latitude', 'destination_longitude', 'author_uuid')
 
 # Serializer User
 user_schema = UserSchema()
