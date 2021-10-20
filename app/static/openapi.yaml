@@ -207,9 +207,18 @@ paths:
                 title:
                   type: string
                   example: Montain Bike
-                description:
+                type_bike:
                   type: string
-                  example: De 4:20 à 8:00
+                  example: BMX
+                meeting:
+                  type: string
+                  example: Meet
+                intensity:
+                  type: string
+                  example: Pesado
+                type_route:
+                  type: string
+                  example: Montain
                 origin:
                   type: object
                   example:
@@ -258,9 +267,18 @@ components:
         title:
           type: string
           example: Montain Bike
-        description:
+        type_bike:
           type: string
-          example: De 4:20 à 8:00
+          example: BMX
+        meeting:
+          type: string
+          example: Meet
+        intensity:
+          type: string
+          example: Pesado
+        type_route:
+          type: string
+          example: Montain
         origin:
           type: object
           properties:
