@@ -1,3 +1,4 @@
+from email.mime import message
 from flask import request, Request, jsonify, redirect, url_for
 from sqlalchemy.exc import IntegrityError
 import asyncio
@@ -69,6 +70,24 @@ def authorize():
 
   return jsonify(token=token)
 
+@app.route('/user-info', methods=['GET',])
+def get_info_user():
+  authorization = request.headers
+
+  if( authorization.get('X-access-token') is not None ):
+    user_info = decode_token(authorization.get('X-access-token'))
+
+    if( user_info is not None):
+      data = {
+        "name": user_info['name'],
+        "email": user_info['email']
+      }
+
+      return jsonify(data)
+    else:
+      return jsonify(message="Token inválido!"), 400 # Bad Request
+  else:
+    return jsonify(message="X-access-token é obrigatório!"), 400 # Bad Request
 
 @app.route('/register', methods=['POST',])
 def create_account():
