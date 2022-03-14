@@ -4,6 +4,7 @@ from flask import Flask
 from flask_cors import CORS
 from flask_swagger_ui import get_swaggerui_blueprint
 import os
+import boto3
 
 load_dotenv()
 
@@ -34,5 +35,12 @@ google = oauth.register(
   api_base_url="https://www.googleapis.com/oauth2/v1/",
   client_kwargs={"scope": "openid profile email"},
 ) # Definindo as configurações do OAuth2 [Isso não precisa ser explicado, pois, pega no google!]
+
+client = boto3.client(
+  service_name='s3',
+  aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
+  aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
+  region_name='eu-west-1'
+) # Configuração do AWS S3
 
 from app.routes import *

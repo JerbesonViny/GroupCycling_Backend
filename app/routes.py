@@ -1,10 +1,13 @@
 from email.mime import message
-from flask import request, Request, jsonify, redirect, url_for
+from flask import render_template, request, Request, jsonify, redirect, url_for
 from sqlalchemy.exc import IntegrityError
+from datetime import datetime
+from uuid import uuid4
 import asyncio
 
 from app import app, oauth, google
 from app.utils import search_arg
+from app.utils.helpers import upload_file_to_s3, allowed_file
 from app.utils.secury import create_token, decode_token
 from app.database.schemas import (
   User, user_schema, users_schema, \
@@ -191,3 +194,28 @@ def list_events_per_author():
     return jsonify(message="Token inválido e/ou expirou!"), 401 # Unauthorized
 
   return jsonify(message="É necessário estar logado para ter acesso a essa funcionalidade!"), 401 # Unauthorized
+
+
+@app.route('/send-image/', methods=['POST',])
+def send_image():
+  if( "images" not in request.files ):
+    return jsonify(message="FileImage is required!")
+  
+  files = request.files['images']
+
+  if( files.filename == "" ):
+    return jsonify(message="No selected file")
+  
+  if( files and allowed_file(files.filename) ):
+    image_name = f"{uuid4().hex}{datetime.now().strftime('%Y%m%d')}.{files.content_type[files.content_type.find('/')+1::]}"
+    output = upload_file_to_s3(file=files, filename=image_name)
+
+    if output:
+      return jsonify(message="Success upload")
+    else:
+      return jsonify(message="Unable to upload, try again")  
+      
+  else:
+    return jsonify(message="File type not accepted,please try again.")
+
+  
