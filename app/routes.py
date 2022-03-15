@@ -13,6 +13,8 @@ from app.utils.helpers import upload_file_to_s3, allowed_file
 from app.controllers.usercontroller import create_user, verify_user_exists, authentication
 from app.controllers.eventcontroller import create_event, get_all_events, get_events_per_user
 
+from app.middlewares import authorization_is_required, valid_token
+
 from app.database.schemas import User, Event, user_schema,  events_schema
 
 loop = asyncio.get_event_loop()

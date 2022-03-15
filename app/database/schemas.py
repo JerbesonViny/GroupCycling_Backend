@@ -12,7 +12,8 @@ Base = declarative_base()
 class User(Base):
   __tablename__ = "users"
 
-  uuid = Column(String, primary_key=True)
+  id = Column(Integer, primary_key=True, autoincrement=True)
+  uuid = Column(String)
   name = Column(String, nullable=False)
   email = Column(String, nullable=False, unique=True)
   password = Column(Text, nullable=False)
@@ -34,18 +35,18 @@ class Event(Base):
   origin_longitude = Column(Float, nullable=False)
   destination_latitude = Column(Float, nullable=False)
   destination_longitude = Column(Float, nullable=False)
-  author_uuid = Column(Integer, ForeignKey("users.uuid"))
+  author_id = Column(Integer, ForeignKey("users.id"))
 
   def __repr__(self) -> str:
     return f"<Event(Title={self.title}, origin=[{self.origin_latitude}, {self.origin_longitude}], destination=[{self.destination_latitude}, {self.destination_longitude}])>"
 
 class UserSchema(ma.Schema):
   class Meta:
-    fields = ('uuid', 'name', 'email', 'password')
+    fields = ('id', 'uuid', 'name', 'email', 'password')
 
 class EventSchema(ma.Schema):
   class Meta:
-    fields = ('id', 'title', 'type_bike', 'meeting', 'intensity', 'type_route', 'origin_latitude', 'origin_longitude', 'destination_latitude', 'destination_longitude', 'author_uuid')
+    fields = ('id', 'title', 'type_bike', 'meeting', 'intensity', 'type_route', 'origin_latitude', 'origin_longitude', 'destination_latitude', 'destination_longitude', 'author_id')
 
 # Serializer User
 user_schema = UserSchema()
