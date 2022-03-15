@@ -1,24 +1,19 @@
-from email.mime import message
-from flask import render_template, request, Request, jsonify, redirect, url_for
+from flask import request, jsonify,  url_for
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime
+from io import BytesIO
 from uuid import uuid4
 import asyncio
+import base64
 
-from app import app, oauth, google
+from app import app, oauth
 from app.utils import search_arg
-from app.utils.helpers import upload_file_to_s3, allowed_file
 from app.utils.secury import create_token, decode_token
-from app.database.schemas import (
-  User, user_schema, users_schema, \
-  Event, event_schema, events_schema, \
-)
-from app.controllers.usercontroller import (
-  create_user, verify_user_exists, authentication
-)
-from app.controllers.eventcontroller import (
-  create_event, get_all_events, get_events_per_user
-)
+from app.utils.helpers import upload_file_to_s3, allowed_file
+from app.controllers.usercontroller import create_user, verify_user_exists, authentication
+from app.controllers.eventcontroller import create_event, get_all_events, get_events_per_user
+
+from app.database.schemas import User, Event, user_schema,  events_schema
 
 loop = asyncio.get_event_loop()
 
@@ -195,27 +190,32 @@ def list_events_per_author():
 
   return jsonify(message="É necessário estar logado para ter acesso a essa funcionalidade!"), 401 # Unauthorized
 
-
 @app.route('/send-image/', methods=['POST',])
 def send_image():
-  if( "images" not in request.files ):
-    return jsonify(message="FileImage is required!")
+  # Verificando se o Base64 foi enviado
+  if( "Base64" not in request.json ):
+    return jsonify(message="FileImage is required!"), 422 # Unprocessable Entity
   
-  files = request.files['images']
+  # Captando o Base64
+  files = request.json['Base64']
 
-  if( files.filename == "" ):
-    return jsonify(message="No selected file")
+  # Verificando se o arquivo nao eh vazio
+  if( files == "" ):
+    return jsonify(message="No selected file"), 422 # Unprocessable Entity
   
-  if( files and allowed_file(files.filename) ):
-    image_name = f"{uuid4().hex}{datetime.now().strftime('%Y%m%d')}.{files.content_type[files.content_type.find('/')+1::]}"
-    output = upload_file_to_s3(file=files, filename=image_name)
+  # Decodificando o base64
+  im = BytesIO(base64.b64decode(files))
 
-    if output:
-      return jsonify(message="Success upload")
-    else:
-      return jsonify(message="Unable to upload, try again")  
-      
+  # Criando o nome da imagem
+  image_name = f"{uuid4().hex}{datetime.now().strftime('%Y%m%d')}.png"
+
+  # Tentando enviar a imagem para o AWS
+  output = upload_file_to_s3(file=im, filename=image_name)
+  
+  # Se o upload tiver sido efetuado com sucesso
+  if output:
+    return jsonify(message="Success upload"), 200 # OK
+  
   else:
-    return jsonify(message="File type not accepted,please try again.")
-
-  
+    return jsonify(message="Unable to upload, try again"), 400 # Bad Request
+      

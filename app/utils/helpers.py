@@ -11,7 +11,7 @@ def upload_file_to_s3(file, filename, acl="private"):
       f"image-upload/{file_name}",
       ExtraArgs={
         "ACL": acl,
-        "ContentType": file.content_type
+        "ContentType": "PNG"
       }
     )
   except Exception as e:

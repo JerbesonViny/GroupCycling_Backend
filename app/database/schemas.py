@@ -12,7 +12,7 @@ Base = declarative_base()
 class User(Base):
   __tablename__ = "users"
 
-  uuid = Column(UUID, primary_key=True)
+  uuid = Column(String, primary_key=True)
   name = Column(String, nullable=False)
   email = Column(String, nullable=False, unique=True)
   password = Column(Text, nullable=False)
@@ -34,7 +34,7 @@ class Event(Base):
   origin_longitude = Column(Float, nullable=False)
   destination_latitude = Column(Float, nullable=False)
   destination_longitude = Column(Float, nullable=False)
-  author_uuid = Column(UUID, ForeignKey("users.uuid"))
+  author_uuid = Column(Integer, ForeignKey("users.uuid"))
 
   def __repr__(self) -> str:
     return f"<Event(Title={self.title}, origin=[{self.origin_latitude}, {self.origin_longitude}], destination=[{self.destination_latitude}, {self.destination_longitude}])>"
