@@ -11,11 +11,14 @@ from app.utils.secury import create_token, decode_token
 from app.utils.helpers import upload_file_to_s3, allowed_file
 from app.controllers.usercontroller import create_user, verify_user_exists, authentication, search_by_uuid
 from app.controllers.eventcontroller import create_event, get_all_events, get_events_per_user
-from app.controllers.postcontroller import create_post
+from app.controllers.postcontroller import create_post, get_all_posts
 
 from app.middlewares import authorization_is_required, valid_token
 
-from app.database.schemas import Post, User, Event, user_schema,  events_schema
+from app.database.schemas import ( 
+  Post, User, Event, 
+  user_schema,  events_schema, 
+  post_schema, posts_schema )
 
 loop = asyncio.get_event_loop()
 
@@ -237,3 +240,10 @@ def send_image():
   else:
     return jsonify(message="Unable to upload, try again"), 400 # Bad Request
       
+@app.route('/posts', methods=['GET',])
+@authorization_is_required
+@valid_token
+def get_posts():
+  posts = loop.run_until_complete(get_all_posts())
+
+  return jsonify(posts_schema.dump(posts))
