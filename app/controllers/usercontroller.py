@@ -48,3 +48,12 @@ async def authentication(email: str, password: str) -> dict:
     ) # Selecionando alguns campos de usuário que tenha email e senha correspondente ao que foi passado
 
     return query.first()
+
+async def search_by_uuid(uuid: str) -> int:
+  # Create connection in BD
+  async with Session() as s:
+    query = await s.execute(
+      select(User.id).where(User.uuid == uuid)
+    )
+
+    return query.first()

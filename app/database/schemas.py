@@ -38,7 +38,7 @@ class Event(Base):
   def __repr__(self) -> str:
     return f"<Event(Title={self.title}, Origin=[{self.origin_latitude}, {self.origin_longitude}], Destination=[{self.destination_latitude}, {self.destination_longitude}])>"
 
-
+# Modelo dos posts
 class Post(Base):
   __tablename__ = "posts"
 

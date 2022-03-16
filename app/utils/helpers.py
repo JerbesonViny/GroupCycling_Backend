@@ -2,13 +2,13 @@ import os
 from werkzeug.utils import secure_filename
 from app import client
 
-def upload_file_to_s3(file, filename, acl="private"):
+def upload_file_to_s3(file, filename, path, acl="private"):
   file_name = secure_filename(filename)
   try:
     client.upload_fileobj(
       file,
       os.getenv("AWS_BUCKET_NAME"),
-      f"image-upload/{file_name}",
+      f"{path}/{file_name}",
       ExtraArgs={
         "ACL": acl,
         "ContentType": "PNG"

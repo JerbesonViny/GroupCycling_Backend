@@ -3,19 +3,19 @@ from sqlalchemy.exc import IntegrityError
 from datetime import datetime
 from io import BytesIO
 from uuid import uuid4
-import asyncio
-import base64
+import asyncio, base64, os
 
 from app import app, oauth
 from app.utils import search_arg
 from app.utils.secury import create_token, decode_token
 from app.utils.helpers import upload_file_to_s3, allowed_file
-from app.controllers.usercontroller import create_user, verify_user_exists, authentication
+from app.controllers.usercontroller import create_user, verify_user_exists, authentication, search_by_uuid
 from app.controllers.eventcontroller import create_event, get_all_events, get_events_per_user
+from app.controllers.postcontroller import create_post
 
 from app.middlewares import authorization_is_required, valid_token
 
-from app.database.schemas import User, Event, user_schema,  events_schema
+from app.database.schemas import Post, User, Event, user_schema,  events_schema
 
 loop = asyncio.get_event_loop()
 
@@ -31,6 +31,7 @@ def login():
   if( data.get('email') and data.get('password') ):
     auth = loop.run_until_complete(authentication(data['email'], data['password']))
 
+    # Se existir um user com as credenciais que foram passadas
     if( auth is not None and len(auth) > 0 ):
       auth = user_schema.dump(auth)
       token = create_token(auth)
@@ -193,7 +194,11 @@ def list_events_per_author():
   return jsonify(message="É necessário estar logado para ter acesso a essa funcionalidade!"), 401 # Unauthorized
 
 @app.route('/send-image/', methods=['POST',])
+@authorization_is_required
+@valid_token
 def send_image():
+  user_info = decode_token(request.headers['X-access-token'])
+
   # Verificando se o Base64 foi enviado
   if( "Base64" not in request.json ):
     return jsonify(message="FileImage is required!"), 422 # Unprocessable Entity
@@ -205,19 +210,30 @@ def send_image():
   if( files == "" ):
     return jsonify(message="No selected file"), 422 # Unprocessable Entity
   
-  # Decodificando o base64
-  im = BytesIO(base64.b64decode(files))
+  im = BytesIO(base64.b64decode(files)) # Decodificando o base64
+  image_name = f"{uuid4().hex}{datetime.now().strftime('%Y%m%d')}.png" # Criando o nome da imagem
+  output = upload_file_to_s3(file=im, path=os.environ.get('PATH_POSTS'), filename=image_name) # Tentando enviar a imagem para o AWS
 
-  # Criando o nome da imagem
-  image_name = f"{uuid4().hex}{datetime.now().strftime('%Y%m%d')}.png"
-
-  # Tentando enviar a imagem para o AWS
-  output = upload_file_to_s3(file=im, filename=image_name)
-  
   # Se o upload tiver sido efetuado com sucesso
   if output:
-    return jsonify(message="Success upload"), 200 # OK
-  
+    user_identification = loop.run_until_complete(search_by_uuid(uuid=user_info['uuid']))
+
+    if( user_identification is not None ):
+      post = Post(
+        caption   = request.json.get('caption'),
+        image_url = f"{os.environ.get('PATH_POSTS')}/{image_name}",
+        author_id = user_identification[0]
+      )
+      
+      new_post = loop.run_until_complete(create_post(post))
+
+      if( new_post is None ):
+        return jsonify(message="Could not create post"), 400 # Bad Request
+      
+      return jsonify(message="Post created successfully"), 200 # OK
+    else:
+      return jsonify(message="Invalid token and/or expired"), 401 # Unauthorized
+
   else:
     return jsonify(message="Unable to upload, try again"), 400 # Bad Request
       
